@@ -38,6 +38,7 @@ class XmlaOlap4jHierarchy
     final NamedList<XmlaOlap4jLevel> levels;
     private final boolean all;
     private final String defaultMemberUniqueName;
+    private final Structure structure;
 
     XmlaOlap4jHierarchy(
         XmlaOlap4jDimension olap4jDimension,
@@ -46,13 +47,16 @@ class XmlaOlap4jHierarchy
         String caption,
         String description,
         boolean all,
-        String defaultMemberUniqueName) throws OlapException
+        String defaultMemberUniqueName,
+        Structure structure) throws OlapException
     {
         super(uniqueName, name, caption, description);
         assert olap4jDimension != null;
+        assert structure != null;
         this.olap4jDimension = olap4jDimension;
         this.all = all;
         this.defaultMemberUniqueName = defaultMemberUniqueName;
+        this.structure = structure;
 
         String[] hierarchyRestrictions = {
             "CATALOG_NAME",
@@ -111,6 +115,10 @@ class XmlaOlap4jHierarchy
         final NamedList<XmlaOlap4jMember> list =
             new NamedListImpl<XmlaOlap4jMember>(memberList);
         return Olap4jUtil.cast(list);
+    }
+
+    public Structure getStructure() {
+        return structure;
     }
 
     public boolean equals(Object obj) {

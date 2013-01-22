@@ -1421,6 +1421,15 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
                 stringElement(row, "ALL_MEMBER");
             final String defaultMemberUniqueName =
                 stringElement(row, "DEFAULT_MEMBER");
+            final Integer structureCode = integerElement(row, "STRUCTURE");
+            Hierarchy.Structure structure = null;
+            if (structureCode != null) {
+                structure =
+                    Hierarchy.Structure.DICTIONARY.forOrdinal(structureCode);
+            }
+            if (structure == null) {
+                structure = Hierarchy.Structure.FULLYBALANCED;
+            }
             XmlaOlap4jHierarchy hierarchy = new XmlaOlap4jHierarchy(
                 context.getDimension(row),
                 hierarchyUniqueName,
@@ -1428,7 +1437,8 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
                 hierarchyCaption,
                 description,
                 allMember != null,
-                defaultMemberUniqueName);
+                defaultMemberUniqueName,
+                structure);
             list.add(hierarchy);
             cubeForCallback.hierarchiesByUname.put(
                 hierarchy.getUniqueName(),
