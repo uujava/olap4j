@@ -1329,7 +1329,7 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
             final int dimensionType =
                 integerElement(row, "DIMENSION_TYPE");
             final Dimension.Type type =
-                Dimension.Type.getDictionary().forOrdinal(dimensionType);
+                Dimension.Type.DICTIONARY.forOrdinal(dimensionType);
             final String defaultHierarchyUniqueName =
                 stringElement(row, "DEFAULT_HIERARCHY");
             final Integer dimensionOrdinal =
@@ -1488,7 +1488,7 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
                 integerElement(row, "LEVEL_NUMBER");
             final Integer levelTypeCode = integerElement(row, "LEVEL_TYPE");
             final Level.Type levelType =
-                Level.Type.getDictionary().forOrdinal(levelTypeCode);
+                Level.Type.DICTIONARY.forOrdinal(levelTypeCode);
             boolean calculated = (levelTypeCode & MDLEVEL_TYPE_CALCULATED) != 0;
             final int levelCardinality =
                 integerElement(row, "LEVEL_CARDINALITY");
@@ -1536,15 +1536,15 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
             final String formatString =
                 stringElement(row, "DEFAULT_FORMAT_STRING");
             final Measure.Aggregator measureAggregator =
-                Measure.Aggregator.getDictionary().forOrdinal(
+                Measure.Aggregator.DICTIONARY.forOrdinal(
                     integerElement(
                         row, "MEASURE_AGGREGATOR"));
             final Datatype datatype;
             Datatype ordinalDatatype =
-                Datatype.getDictionary().forName(
+                Datatype.DICTIONARY.forName(
                     stringElement(row, "DATA_TYPE"));
             if (ordinalDatatype == null) {
-                datatype = Datatype.getDictionary().forOrdinal(
+                datatype = Datatype.DICTIONARY.forOrdinal(
                     integerElement(row, "DATA_TYPE"));
             } else {
                 datatype = ordinalDatatype;
@@ -1868,10 +1868,10 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
             Datatype datatype;
 
             Datatype ordinalDatatype =
-                Datatype.getDictionary().forName(
+                Datatype.DICTIONARY.forName(
                     stringElement(row, "DATA_TYPE"));
             if (ordinalDatatype == null) {
-                datatype = Datatype.getDictionary().forOrdinal(
+                datatype = Datatype.DICTIONARY.forOrdinal(
                     integerElement(row, "DATA_TYPE"));
             } else {
                 datatype = ordinalDatatype;
@@ -1882,11 +1882,11 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
             Property.ContentType contentType =
                 contentTypeOrdinal == null
                     ? null
-                    : Property.ContentType.getDictionary().forOrdinal(
+                    : Property.ContentType.DICTIONARY.forOrdinal(
                         contentTypeOrdinal);
             int propertyType = integerElement(row, "PROPERTY_TYPE");
             Set<Property.TypeFlag> type =
-                Property.TypeFlag.getDictionary().forMask(propertyType);
+                Property.TypeFlag.DICTIONARY.forMask(propertyType);
             list.add(
                 new XmlaOlap4jProperty(
                     uniqueName, name, caption, description, datatype, type,
