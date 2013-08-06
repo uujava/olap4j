@@ -1287,7 +1287,9 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
         }
     }
 
-    static class MeasureGroupHandler extends HandlerImpl<XmlaOlap4jMeasureGroup> {
+    static class MeasureGroupHandler
+        extends HandlerImpl<XmlaOlap4jMeasureGroup>
+    {
         public void handle(
             Element row,
             Context context,
@@ -1305,6 +1307,7 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
             //     <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
             //     <MEASUREGROUP_CAPTION>Internet Sales</MEASUREGROUP_CAPTION>
             // </row>
+            //
             // Unused: CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, IS_WRITE_ENABLED
             String measureGroupName = stringElement(row, "MEASUREGROUP_NAME");
             String caption = stringElement(row, "MEASUREGROUP_CAPTION");
@@ -1322,7 +1325,9 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
         }
     }
 
-    static class MeasureGroupDimensionHandler extends HandlerImpl<XmlaOlap4jDimension> {
+    static class MeasureGroupDimensionHandler
+        extends HandlerImpl<XmlaOlap4jDimension>
+    {
         private final XmlaOlap4jCube cubeForCallback;
 
         public MeasureGroupDimensionHandler(XmlaOlap4jCube cube) {
@@ -1345,10 +1350,12 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
             //     <DIMENSION_UNIQUE_NAME>[Department]</DIMENSION_UNIQUE_NAME>
             //     <DIMENSION_CARDINALITY>one</DIMENSION_CARDINALITY>
             //     <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
-            //     <DIMENSION_IS_FACT_DIMENSION>false</DIMENSION_IS_FACT_DIMENSION>
+            //     <DIMENSION_IS_FACT_DIMENSION>false
+            //     </DIMENSION_IS_FACT_DIMENSION>
             //     <DIMENSION_PATH>???</DIMENSION_PATH>
             //     <DIMENSION_GRANULARITY>???</DIMENSION_GRANULARITY>
             // </row>
+            //
             // Unused: CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, MEASUREGROUP_NAME,
             //   MEASUREGROUP_CARDINALITY, DIMENSION_CARDINALITY,
             //   DIMENSION_IS_VISIBLE, DIMENSION_IS_VISIBLE,
