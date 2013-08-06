@@ -17,16 +17,19 @@
 */
 package org.olap4j.driver.xmla;
 
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.ROWSET_NS;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.SOAP_NS;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.SQL_NS;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.XMLA_NS;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.XSD_NS;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.childElements;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.findChild;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.findChildren;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.parse;
-import static org.olap4j.driver.xmla.XmlaOlap4jUtil.prettyPrint;
+import org.olap4j.CellSet;
+import org.olap4j.CellSetListener;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
+import org.olap4j.OlapStatement;
+import org.olap4j.driver.xmla.XmlaOlap4jConnection.BackendFlavor;
+import org.olap4j.mdx.ParseTreeNode;
+import org.olap4j.mdx.ParseTreeWriter;
+import org.olap4j.mdx.SelectNode;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -42,18 +45,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.olap4j.CellSet;
-import org.olap4j.CellSetListener;
-import org.olap4j.OlapConnection;
-import org.olap4j.OlapException;
-import org.olap4j.OlapStatement;
-import org.olap4j.driver.xmla.XmlaOlap4jConnection.BackendFlavor;
-import org.olap4j.mdx.ParseTreeNode;
-import org.olap4j.mdx.ParseTreeWriter;
-import org.olap4j.mdx.SelectNode;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.ROWSET_NS;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.SOAP_NS;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.SQL_NS;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.XMLA_NS;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.XSD_NS;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.childElements;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.findChild;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.findChildren;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.parse;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.prettyPrint;
 
 /**
  * Implementation of {@link org.olap4j.OlapStatement}
@@ -108,7 +109,7 @@ abstract class XmlaOlap4jStatement implements OlapStatement {
         final String dataSourceInfo = olap4jConnection.getDatabase();
         final String roleName = olap4jConnection.getRoleName();
         final String propList = olap4jConnection.makeConnectionPropertyList();
-        StringBuilder buf = new StringBuilder(
+        final StringBuilder buf = new StringBuilder(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<soapenv:Envelope\n"
             + "    xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\n"
@@ -186,7 +187,7 @@ abstract class XmlaOlap4jStatement implements OlapStatement {
         Element fault =
             findChild(body, SOAP_NS, "Fault");
         if (fault != null) {
-            /*
+/*
         <SOAP-ENV:Fault>
             <faultcode>SOAP-ENV:Client.00HSBC01</faultcode>
             <faultstring>XMLA connection datasource not found</faultstring>
@@ -199,7 +200,7 @@ abstract class XmlaOlap4jStatement implements OlapStatement {
                 </XA:error>
             </detail>
         </SOAP-ENV:Fault>
-             */
+*/
             // TODO: log doc to logfile
             throw getHelper().createException(
                 "XMLA provider gave exception: "
@@ -256,7 +257,8 @@ abstract class XmlaOlap4jStatement implements OlapStatement {
             }
         }
 
-        return olap4jConnection.factory.newFixedResultSet(olap4jConnection, headerList, rowList);
+        return olap4jConnection.factory
+            .newFixedResultSet(olap4jConnection, headerList, rowList);
     }
 
     private void checkOpen() throws SQLException {
@@ -508,7 +510,7 @@ abstract class XmlaOlap4jStatement implements OlapStatement {
         if (propList != null) {
             buf.append(propList);
         }
-        if (roleName != null && !("".equals(roleName))) {
+        if (roleName != null && !roleName.equals("")) {
             buf.append("        <Roles>");
             buf.append(roleName);
             buf.append("</Roles>\n");
