@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/julianhyde/olap4j.png)](https://travis-ci.org/julianhyde/olap4j)
+[![Build Status](https://travis-ci.org/olap4j/olap4j.png)](https://travis-ci.org/olap4j/olap4j)
 
 # olap4j #
 
@@ -20,14 +20,14 @@ experience and know a little about OLAP.
 
 ## Prerequisites ##
 
-Olap4j requires ant (version 1.7 or later) and JDK 1.7 to build. (Once built, it also runs under JDK 1.5 and 1.6.)
+Olap4j requires maven (version 3.0 or later) and JDK 1.7 to build. (Once built, it also runs under JDK 1.5 and 1.6.)
 
 ## Download and build ##
 
 ```bash
 $ git clone git://github.com/olap4j/olap4j.git
 $ cd olap4j
-$ ant
+$ mvn install
 ```
 
 ## Writing a simple program ##
