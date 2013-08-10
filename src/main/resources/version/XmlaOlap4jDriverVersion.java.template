@@ -7,8 +7,8 @@ package org.olap4j.driver.xmla;
   */
 class XmlaOlap4jDriverVersion {
     static final String NAME = "olap4j driver for XML/A";
-    static final String VERSION = "@pomversion";
-    static final String BUILD_TIMESTAMP = "@buildtime";
+    static final String VERSION = "@pomversion@";
+    static final String BUILD_TIMESTAMP = "@buildtime@";
     static final int MAJOR_VERSION = 2;
     static final int MINOR_VERSION = 0;
 }

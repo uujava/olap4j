@@ -199,7 +199,7 @@
         </executions>
         <configuration>
           <file>src/main/resources/version/XmlaOlap4jDriverVersion.java.template</file>
-          <outputFile>src/main/java/org/olap4j/driver/xmla/XmlaOlap4jDriverVersion.java</outputFile>
+          <outputFile>target/generated-sources/java/org/olap4j/driver/xmla/XmlaOlap4jDriverVersion.java</outputFile>
           <replacements>
             <replacement>
               <token>@buildtime@</token>
@@ -211,6 +211,21 @@
             </replacement>
           </replacements>                        
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+              <goal>test-jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
 
