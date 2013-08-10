@@ -39,9 +39,11 @@ class XmlaOlap4jHierarchy
     private final boolean all;
     private final String defaultMemberUniqueName;
     private final Structure structure;
+    private final int ordinal;
 
     XmlaOlap4jHierarchy(
         XmlaOlap4jDimension olap4jDimension,
+        int ordinal,
         String uniqueName,
         String name,
         String caption,
@@ -54,6 +56,7 @@ class XmlaOlap4jHierarchy
         assert olap4jDimension != null;
         assert structure != null;
         this.olap4jDimension = olap4jDimension;
+        this.ordinal = ordinal;
         this.all = all;
         this.defaultMemberUniqueName = defaultMemberUniqueName;
         this.structure = structure;
@@ -91,6 +94,46 @@ class XmlaOlap4jHierarchy
         return olap4jDimension;
     }
 
+    public Member getAllMember() throws OlapException {
+        return all ? getRootMembers().get(0) : null;
+    }
+
+    public boolean isReadWrite() {
+        return false; // FIXME
+    }
+
+    public int getOrdinal() {
+        return ordinal;
+    }
+
+    public StructureType getStructureType() {
+        return StructureType.Natural; // FIXME
+    }
+
+    public int getCardinality() {
+        int n = 0;
+        for (XmlaOlap4jLevel level : levels) {
+            n += level.getCardinality();
+        }
+        return n;
+    }
+
+    public String getDisplayFolder() {
+        return null; // FIXME
+    }
+
+    public InstanceSelection getInstanceSelection() {
+        return InstanceSelection.NONE; // FIXME
+    }
+
+    public GroupingBehavior getGroupingBehavior() {
+        return null; // FIXME
+    }
+
+    public Origin getOrigin() {
+        return Origin.USER_DEFINED; // FIXME
+    }
+
     public NamedList<Level> getLevels() {
         return Olap4jUtil.cast(levels);
     }
@@ -122,7 +165,8 @@ class XmlaOlap4jHierarchy
     }
 
     public boolean equals(Object obj) {
-        return (obj instanceof XmlaOlap4jHierarchy)
+        return obj == this
+            || (obj instanceof XmlaOlap4jHierarchy)
             && this.uniqueName.equals(
                 ((XmlaOlap4jHierarchy) obj).getUniqueName());
     }
