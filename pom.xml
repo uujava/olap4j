@@ -134,7 +134,7 @@
         <version>2.8</version>
         <executions>
           <execution>
-            <id>test-1</id>
+            <id>properties</id>
             <goals>
               <goal>properties</goal>
             </goals>
@@ -191,7 +191,8 @@
         <version>1.4.0</version>
         <executions>                
           <execution>
-            <phase>process-sources</phase>
+            <phase>generate-sources</phase>
+            <id>replace</id>
             <goals>
               <goal>replace</goal>
             </goals>
@@ -199,7 +200,7 @@
         </executions>
         <configuration>
           <file>src/main/resources/version/XmlaOlap4jDriverVersion.java.template</file>
-          <outputFile>target/generated-sources/java/org/olap4j/driver/xmla/XmlaOlap4jDriverVersion.java</outputFile>
+          <outputFile>target/generated-sources/javacc/org/olap4j/driver/xmla/XmlaOlap4jDriverVersion.java</outputFile>
           <replacements>
             <replacement>
               <token>@buildtime@</token>
