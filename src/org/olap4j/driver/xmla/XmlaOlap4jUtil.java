@@ -17,17 +17,21 @@
 */
 package org.olap4j.driver.xmla;
 
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.parsers.DOMParser;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.math.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Utility methods for the olap4j driver for XML/A.
@@ -39,7 +43,13 @@ import java.util.*;
  * @author jhyde
  * @since Dec 2, 2007
  */
-abstract class XmlaOlap4jUtil {
+public abstract class XmlaOlap4jUtil {
+    /**
+     * This is a private property used for development only.
+     * Enabling it makes the connection print out all queries
+     * to {@link System#out}
+     */
+    public static final Logger LOGGER = Logger.getLogger("org.olap4j.driver.xmla");
     static final String LINE_SEP =
         System.getProperty("line.separator", "\n");
     static final String SOAP_PREFIX = "SOAP-ENV";
@@ -54,18 +64,6 @@ abstract class XmlaOlap4jUtil {
     static final String XSD_PREFIX = "xsd";
     static final String XMLNS = "xmlns";
 
-    static final String NAMESPACES_FEATURE_ID =
-        "http://xml.org/sax/features/namespaces";
-    static final String VALIDATION_FEATURE_ID =
-        "http://xml.org/sax/features/validation";
-    static final String SCHEMA_VALIDATION_FEATURE_ID =
-        "http://apache.org/xml/features/validation/schema";
-    static final String FULL_SCHEMA_VALIDATION_FEATURE_ID =
-        "http://apache.org/xml/features/validation/schema-full-checking";
-    static final String DEFER_NODE_EXPANSION =
-        "http://apache.org/xml/features/dom/defer-node-expansion";
-    static final String SCHEMA_LOCATION =
-        Constants.XERCES_PROPERTY_PREFIX + Constants.SCHEMA_LOCATION;
 
     /**
      * Parse a stream into a Document (no validation).
@@ -76,55 +74,55 @@ abstract class XmlaOlap4jUtil {
     {
         InputSource source = new InputSource(new ByteArrayInputStream(in));
 
-        DOMParser parser = getParser(null, null, false);
+        ErrorHandlerImpl errorHandler = new ErrorHandlerImpl();
+        DocumentBuilder parser = getParser(null, errorHandler);
+        Document document = null;
         try {
-            parser.parse(source);
-            checkForParseError(parser);
+            document = parser.parse(source);
+            checkForParseError(errorHandler);
         } catch (SAXParseException ex) {
-            checkForParseError(parser, ex);
+            checkForParseError(errorHandler, ex);
         }
 
-        return parser.getDocument();
+        return document;
     }
 
+    transient private final static ThreadLocal<DocumentBuilder> documentBuilder = new ThreadLocal<DocumentBuilder>() {
+        @Override
+        protected DocumentBuilder initialValue() {
+            try {
+                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance("com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl", getClass().getClassLoader());
+                documentBuilderFactory.setNamespaceAware(true);
+                documentBuilderFactory.setValidating(false);
+                return documentBuilderFactory.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                throw new IllegalStateException("Unable to create document builder");
+            }
+        }
+    };
     /**
      * Get your non-cached DOM parser which can be configured to do schema
      * based validation of the instance Document.
      *
      */
-    static DOMParser getParser(
-        String schemaLocationPropertyValue,
-        EntityResolver entityResolver,
-        boolean validate)
+    static DocumentBuilder getParser(EntityResolver entityResolver, ErrorHandler errorHandler)
         throws SAXNotRecognizedException, SAXNotSupportedException
     {
-        boolean doingValidation =
-            (validate || (schemaLocationPropertyValue != null));
 
-        DOMParser parser = new DOMParser();
+        DocumentBuilder builder = documentBuilder.get();
+        builder.reset();
 
-        parser.setEntityResolver(entityResolver);
-        parser.setErrorHandler(new ErrorHandlerImpl());
-        parser.setFeature(DEFER_NODE_EXPANSION, false);
-        parser.setFeature(NAMESPACES_FEATURE_ID, true);
-        parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, doingValidation);
-        parser.setFeature(VALIDATION_FEATURE_ID, doingValidation);
+        builder.setEntityResolver(entityResolver);
+        builder.setErrorHandler(errorHandler);
 
-        if (schemaLocationPropertyValue != null) {
-            parser.setProperty(
-                SCHEMA_LOCATION,
-                schemaLocationPropertyValue.replace('\\', '/'));
-        }
-
-        return parser;
+        return builder;
     }
 
     /**
      * Checks whether the DOMParser after parsing a Document has any errors and,
      * if so, throws a RuntimeException exception containing the errors.
      */
-    static void checkForParseError(DOMParser parser, Throwable t) {
-        final ErrorHandler errorHandler = parser.getErrorHandler();
+    static void checkForParseError(final ErrorHandler errorHandler, Throwable t) {
 
         if (errorHandler instanceof ErrorHandlerImpl) {
             final ErrorHandlerImpl saxEH = (ErrorHandlerImpl) errorHandler;
@@ -139,8 +137,8 @@ abstract class XmlaOlap4jUtil {
         }
     }
 
-    static void checkForParseError(final DOMParser parser) {
-        checkForParseError(parser, null);
+    static void checkForParseError(final ErrorHandler errorHandler) {
+        checkForParseError(errorHandler, null);
     }
 
     static List<Node> listOf(final NodeList nodeList) {
@@ -372,57 +370,20 @@ abstract class XmlaOlap4jUtil {
             return null;
         }
         try {
+            TransformerFactory factory = TransformerFactory.newInstance();
+
             Document doc = node.getOwnerDocument();
-            OutputFormat format;
-            if (doc != null) {
-                format = new OutputFormat(doc, null, prettyPrint);
-            } else {
-                format = new OutputFormat("xml", null, prettyPrint);
+            Transformer transformer = factory.newTransformer();
+            if(prettyPrint) {
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                factory.setAttribute("indent-number", 4);
             }
-            if (prettyPrint) {
-                format.setLineSeparator(LINE_SEP);
-            } else {
-                format.setLineSeparator("");
-            }
-            StringWriter writer = new StringWriter(1000);
-            XMLSerializer serial = new XMLSerializer(writer, format);
-            serial.asDOMSerializer();
-            if (node instanceof Document) {
-                serial.serialize((Document) node);
-            } else if (node instanceof Element) {
-                format.setOmitXMLDeclaration(true);
-                serial.serialize((Element) node);
-            } else if (node instanceof DocumentFragment) {
-                format.setOmitXMLDeclaration(true);
-                serial.serialize((DocumentFragment) node);
-            } else if (node instanceof Text) {
-                Text text = (Text) node;
-                return text.getData();
-            } else if (node instanceof Attr) {
-                Attr attr = (Attr) node;
-                String name = attr.getName();
-                String value = attr.getValue();
-                writer.write(name);
-                writer.write("=\"");
-                writer.write(value);
-                writer.write("\"");
-                if (prettyPrint) {
-                    writer.write(LINE_SEP);
-                }
-            } else {
-                writer.write("node class = " + node.getClass().getName());
-                if (prettyPrint) {
-                    writer.write(LINE_SEP);
-                } else {
-                    writer.write(' ');
-                }
-                writer.write("XmlUtil.toString: fix me: ");
-                writer.write(node.toString());
-                if (prettyPrint) {
-                    writer.write(LINE_SEP);
-                }
-            }
-            return writer.toString();
+            DOMSource source = new DOMSource(doc);
+
+            StringWriter stringWriter = new StringWriter();
+            StreamResult result = new StreamResult(stringWriter);
+            transformer.transform(source, result);
+            return stringWriter.toString();
         } catch (Exception ex) {
             // ignore
             return null;

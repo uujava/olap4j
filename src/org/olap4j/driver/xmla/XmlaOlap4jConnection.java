@@ -139,13 +139,6 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
     private HashSet<String> olap4jDatabaseProperties = null;
 
     /**
-     * This is a private property used for development only.
-     * Enabling it makes the connection print out all queries
-     * to {@link System#out}
-     */
-    private static final boolean DEBUG = false;
-
-    /**
      * Creates an Olap4j connection an XML/A provider.
      *
      * <p>This method is intentionally package-protected. The public API
@@ -892,10 +885,10 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
      */
     Element executeMetadataRequest(String request) throws OlapException {
         byte[] bytes;
-        if (DEBUG) {
-            System.out.println("********************************************");
-            System.out.println("** SENDING REQUEST :");
-            System.out.println(request);
+        if (LOGGER.isLoggable(java.util.logging.Level.FINE)) {
+            LOGGER.fine("********************************************");
+            LOGGER.fine("** SENDING REQUEST :");
+            LOGGER.fine(request);
         }
         try {
             bytes = proxy.get(serverInfos, request);
@@ -927,9 +920,9 @@ abstract class XmlaOlap4jConnection implements OlapConnection {
         //   </SOAP-ENV:Body>
         // </SOAP-ENV:Envelope>
         final Element envelope = doc.getDocumentElement();
-        if (DEBUG) {
-            System.out.println("** SERVER RESPONSE :");
-            System.out.println(XmlaOlap4jUtil.toString(doc, true));
+        if (LOGGER.isLoggable(java.util.logging.Level.FINE)) {
+            LOGGER.fine("** SERVER RESPONSE :");
+            LOGGER.fine(XmlaOlap4jUtil.toString(doc, true));
         }
         assert envelope.getLocalName().equals("Envelope");
         assert envelope.getNamespaceURI().equals(SOAP_NS);

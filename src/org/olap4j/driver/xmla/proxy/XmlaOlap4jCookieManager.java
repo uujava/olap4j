@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.LOGGER;
 
 /**
  * <p>CookieManager is a simple utility for handling cookies when working
@@ -72,8 +73,6 @@ class XmlaOlap4jCookieManager {
     private static final char DOT = '.';
 
     private DateFormat dateFormat;
-
-    private boolean debug = false;
 
     public XmlaOlap4jCookieManager() {
         store = new ConcurrentHashMap();
@@ -132,9 +131,9 @@ class XmlaOlap4jCookieManager {
                     domainStore.put(name, cookie);
                     cookie.put(name, value);
 
-                    if (this.debug) {
-                        System.out.println(
-                            "Saving cookie : " + name + "=" + value);
+                    if (LOGGER.isLoggable(java.util.logging.Level.FINE)) {
+                        LOGGER.fine(
+                                "Saving cookie : " + name + "=" + value);
                     }
                 }
 
@@ -158,8 +157,8 @@ class XmlaOlap4jCookieManager {
 
                         cookie.put(tokenName, tokenValue);
 
-                        if (this.debug) {
-                            System.out.println(
+                        if (LOGGER.isLoggable(java.util.logging.Level.FINE)) {
+                            LOGGER.fine(
                                 "Saving cookie : "
                                 + tokenName
                                 + "=" + tokenValue);
@@ -213,11 +212,10 @@ class XmlaOlap4jCookieManager {
             }
         }
         try {
-            if (this.debug
+            if (LOGGER.isLoggable(java.util.logging.Level.FINE)
                 && !(cookieStringBuffer.toString().equals("")))
             {
-                System.out.println(
-                    "Using cookie : " + cookieStringBuffer.toString());
+                LOGGER.fine("Using cookie : " + cookieStringBuffer.toString());
             }
             conn.setRequestProperty(COOKIE, cookieStringBuffer.toString());
         } catch (java.lang.IllegalStateException ise) {

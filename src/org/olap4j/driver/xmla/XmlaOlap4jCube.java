@@ -462,9 +462,7 @@ class XmlaOlap4jCube implements Cube, Named
             List<String> memberUniqueNames,
             Map<String, XmlaOlap4jMember> memberMap) throws OlapException
         {
-            if (olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getDatabase()
-                    .indexOf("Provider=Mondrian") != -1)
+            if (olap4jSchema.olap4jCatalog.getDatabase().getProviderName().equals("Mondrian"))
             {
                 mondrianMembersLookup(memberUniqueNames, memberMap);
             } else {

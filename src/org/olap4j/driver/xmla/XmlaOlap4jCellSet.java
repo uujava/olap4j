@@ -32,7 +32,7 @@ import java.net.URL;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
-
+import static org.olap4j.driver.xmla.XmlaOlap4jUtil.LOGGER;
 import static org.olap4j.driver.xmla.XmlaOlap4jUtil.*;
 
 /**
@@ -94,7 +94,6 @@ abstract class XmlaOlap4jCellSet implements CellSet {
     private final List<CellSetAxis> immutableAxisList =
         Olap4jUtil.cast(Collections.unmodifiableList(axisList));
     private XmlaOlap4jCellSetAxis filterAxis;
-    private static final boolean DEBUG = false;
 
     private static final List<String> standardProperties = Arrays.asList(
         "UName", "Caption", "LName", "LNum", "DisplayInfo");
@@ -153,8 +152,8 @@ abstract class XmlaOlap4jCellSet implements CellSet {
         //   </SOAP-ENV:Body>
         // </SOAP-ENV:Envelope>
         final Element envelope = doc.getDocumentElement();
-        if (DEBUG) {
-            System.out.println(XmlaOlap4jUtil.toString(doc, true));
+        if (LOGGER.isLoggable(java.util.logging.Level.FINE)) {
+            LOGGER.fine(XmlaOlap4jUtil.toString(doc, true));
         }
         assert envelope.getLocalName().equals("Envelope");
         assert envelope.getNamespaceURI().equals(SOAP_NS);
@@ -1586,6 +1585,256 @@ abstract class XmlaOlap4jCellSet implements CellSet {
         public boolean isVisible() {
             return true;
         }
+    }
+
+    @Override
+    public RowId getRowId(int i) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public RowId getRowId(String s) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void updateRowId(int i, RowId rowId) throws SQLException {
+
+    }
+
+    @Override
+    public void updateRowId(String s, RowId rowId) throws SQLException {
+
+    }
+
+    @Override
+    public int getHoldability() throws SQLException {
+        return 0;
+    }
+
+    @Override
+    public boolean isClosed() throws SQLException {
+        return false;
+    }
+
+    @Override
+    public void updateNString(int i, String s) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNString(String s, String s2) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNClob(int i, NClob nClob) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNClob(String s, NClob nClob) throws SQLException {
+
+    }
+
+    @Override
+    public NClob getNClob(int i) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public NClob getNClob(String s) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public SQLXML getSQLXML(int i) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public SQLXML getSQLXML(String s) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void updateSQLXML(int i, SQLXML sqlxml) throws SQLException {
+
+    }
+
+    @Override
+    public void updateSQLXML(String s, SQLXML sqlxml) throws SQLException {
+
+    }
+
+    @Override
+    public String getNString(int i) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public String getNString(String s) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Reader getNCharacterStream(int i) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public Reader getNCharacterStream(String s) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public void updateNCharacterStream(int i, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNCharacterStream(String s, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateAsciiStream(int i, InputStream inputStream, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBinaryStream(int i, InputStream inputStream, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateCharacterStream(int i, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateAsciiStream(String s, InputStream inputStream, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBinaryStream(String s, InputStream inputStream, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateCharacterStream(String s, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBlob(int i, InputStream inputStream, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBlob(String s, InputStream inputStream, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateClob(int i, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateClob(String s, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNClob(int i, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNClob(String s, Reader reader, long l) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNCharacterStream(int i, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNCharacterStream(String s, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateAsciiStream(int i, InputStream inputStream) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBinaryStream(int i, InputStream inputStream) throws SQLException {
+
+    }
+
+    @Override
+    public void updateCharacterStream(int i, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateAsciiStream(String s, InputStream inputStream) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBinaryStream(String s, InputStream inputStream) throws SQLException {
+
+    }
+
+    @Override
+    public void updateCharacterStream(String s, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBlob(int i, InputStream inputStream) throws SQLException {
+
+    }
+
+    @Override
+    public void updateBlob(String s, InputStream inputStream) throws SQLException {
+
+    }
+
+    @Override
+    public void updateClob(int i, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateClob(String s, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNClob(int i, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public void updateNClob(String s, Reader reader) throws SQLException {
+
+    }
+
+    @Override
+    public <T> T getObject(int i, Class<T> tClass) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public <T> T getObject(String s, Class<T> tClass) throws SQLException {
+        return null;
     }
 }
 
