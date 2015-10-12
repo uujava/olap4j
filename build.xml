@@ -198,8 +198,8 @@ VERSION.txt" />
           deprecation="${javac.deprecation}"
           fork="true"
           bootclasspathref="project.bootclasspath.jdk15"
-          source="1.6"
-          target="1.6"
+          source="1.5"
+          target="1.5"
           includeantruntime="false">
         <classpath>
           <path refid="classpath" />

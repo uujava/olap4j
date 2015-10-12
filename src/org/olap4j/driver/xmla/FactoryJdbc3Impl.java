@@ -20,11 +20,8 @@ package org.olap4j.driver.xmla;
 import org.olap4j.OlapException;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
-import java.io.InputStream;
-import java.io.Reader;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 /**
  * Implementation of {@link Factory} for JDBC 3.0.
@@ -147,76 +144,6 @@ class FactoryJdbc3Impl implements Factory {
         {
             super(FactoryJdbc3Impl.this, driver, proxy, url, info);
         }
-
-        @Override
-        public Clob createClob() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public Blob createBlob() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public NClob createNClob() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public SQLXML createSQLXML() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public boolean isValid(int i) throws SQLException {
-            return false;
-        }
-
-        @Override
-        public void setClientInfo(String s, String s2) throws SQLClientInfoException {
-
-        }
-
-        @Override
-        public void setClientInfo(Properties properties) throws SQLClientInfoException {
-
-        }
-
-        @Override
-        public String getClientInfo(String s) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public Properties getClientInfo() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public Array createArrayOf(String s, Object[] objects) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public Struct createStruct(String s, Object[] objects) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public void abort(Executor executor) throws SQLException {
-
-        }
-
-        @Override
-        public void setNetworkTimeout(Executor executor, int i) throws SQLException {
-
-        }
-
-        @Override
-        public int getNetworkTimeout() throws SQLException {
-            return 0;
-        }
     }
 
     private static class XmlaOlap4jDatabaseMetaDataJdbc3
@@ -226,51 +153,6 @@ class FactoryJdbc3Impl implements Factory {
             XmlaOlap4jConnection olap4jConnection)
         {
             super(olap4jConnection);
-        }
-
-        @Override
-        public RowIdLifetime getRowIdLifetime() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public ResultSet getSchemas(String s, String s2) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
-            return false;
-        }
-
-        @Override
-        public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
-            return false;
-        }
-
-        @Override
-        public ResultSet getClientInfoProperties() throws SQLException {
-            return null;
-        }
-
-        @Override
-        public ResultSet getFunctions(String s, String s2, String s3) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public ResultSet getFunctionColumns(String s, String s2, String s3, String s4) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public ResultSet getPseudoColumns(String s, String s2, String s3, String s4) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public boolean generatedKeyAlwaysReturned() throws SQLException {
-            return false;
         }
     }
 }

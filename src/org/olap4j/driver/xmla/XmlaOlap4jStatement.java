@@ -448,16 +448,6 @@ abstract class XmlaOlap4jStatement implements OlapStatement {
         return sw.toString();
     }
 
-    @Override
-    public void closeOnCompletion() throws SQLException {
-        throw new UnsupportedOperationException("closeOnCompletion");
-    }
-
-    @Override
-    public boolean isCloseOnCompletion() throws SQLException {
-        return false;
-    }
-
 }
 
 // End XmlaOlap4jStatement.java

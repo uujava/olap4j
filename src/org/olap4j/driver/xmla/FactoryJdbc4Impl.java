@@ -22,7 +22,6 @@ import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 /**
  * Implementation of {@link Factory} for JDBC 4.0.
@@ -133,21 +132,6 @@ class FactoryJdbc4Impl implements Factory {
         {
             super(factory, driver, proxy, url, info);
         }
-
-        @Override
-        public void abort(Executor executor) throws SQLException {
-
-        }
-
-        @Override
-        public void setNetworkTimeout(Executor executor, int i) throws SQLException {
-
-        }
-
-        @Override
-        public int getNetworkTimeout() throws SQLException {
-            return 0;
-        }
     }
 
     private static class XmlaOlap4jCellSetJdbc4
@@ -212,16 +196,6 @@ class FactoryJdbc4Impl implements Factory {
             XmlaOlap4jConnection olap4jConnection)
         {
             super(olap4jConnection);
-        }
-
-        @Override
-        public ResultSet getPseudoColumns(String s, String s2, String s3, String s4) throws SQLException {
-            return null;
-        }
-
-        @Override
-        public boolean generatedKeyAlwaysReturned() throws SQLException {
-            return false;
         }
     }
 }

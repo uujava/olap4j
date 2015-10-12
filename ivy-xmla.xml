@@ -42,7 +42,6 @@
   <dependencies defaultconf="default->default">
     <dependency org="org.olap4j" name="olap4j" rev="${project.revision}"
         conf="default.transitive"/>
-    <!--<dependency org="xerces" name="xercesImpl" rev="2.6.0"/>-->
   </dependencies>
 </ivy-module>
 

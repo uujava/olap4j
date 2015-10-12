@@ -28,14 +28,22 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.math.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Utility methods for the olap4j driver for XML/A.
- *
+ * <p/>
  * <p>Many of the methods are related to XML parsing. For general-purpose
  * methods useful for implementing any olap4j driver, see the org.olap4j.impl
  * package and in particular {@link org.olap4j.impl.Olap4jUtil}.
@@ -51,27 +59,26 @@ public abstract class XmlaOlap4jUtil {
      */
     public static final Logger LOGGER = Logger.getLogger("org.olap4j.driver.xmla");
     static final String LINE_SEP =
-        System.getProperty("line.separator", "\n");
+            System.getProperty("line.separator", "\n");
     static final String SOAP_PREFIX = "SOAP-ENV";
     static final String SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/";
     static final String XMLA_PREFIX = "xmla";
     static final String XMLA_NS = "urn:schemas-microsoft-com:xml-analysis";
     static final String MDDATASET_NS =
-        "urn:schemas-microsoft-com:xml-analysis:mddataset";
+            "urn:schemas-microsoft-com:xml-analysis:mddataset";
     static final String ROWSET_NS =
-        "urn:schemas-microsoft-com:xml-analysis:rowset";
+            "urn:schemas-microsoft-com:xml-analysis:rowset";
 
     static final String XSD_PREFIX = "xsd";
     static final String XMLNS = "xmlns";
+    public static final String FACTORY_IMPL = System.getProperty("olap4j.dom.factory") == null ? "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl" : System.getProperty("olap4j.dom.factory");
 
 
     /**
      * Parse a stream into a Document (no validation).
-     *
      */
     static Document parse(byte[] in)
-        throws SAXException, IOException
-    {
+            throws SAXException, IOException {
         InputSource source = new InputSource(new ByteArrayInputStream(in));
 
         ErrorHandlerImpl errorHandler = new ErrorHandlerImpl();
@@ -90,24 +97,32 @@ public abstract class XmlaOlap4jUtil {
     transient private final static ThreadLocal<DocumentBuilder> documentBuilder = new ThreadLocal<DocumentBuilder>() {
         @Override
         protected DocumentBuilder initialValue() {
+            DocumentBuilderFactory documentBuilderFactory;
             try {
-                DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance("com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl", getClass().getClassLoader());
-                documentBuilderFactory.setNamespaceAware(true);
-                documentBuilderFactory.setValidating(false);
+                Method newInstance = DocumentBuilderFactory.class.getMethod("newInstance", String.class, ClassLoader.class);
+                documentBuilderFactory = (DocumentBuilderFactory) newInstance.invoke(null, FACTORY_IMPL, getClass().getClassLoader());
+            } catch (Exception e) {
+                if (LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.info("Unable to load " + FACTORY_IMPL + " Fallback to default DocumentBuilderFactory behaviour: " + e);
+                }
+                documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            }
+            documentBuilderFactory.setNamespaceAware(true);
+            documentBuilderFactory.setValidating(false);
+            try {
                 return documentBuilderFactory.newDocumentBuilder();
             } catch (ParserConfigurationException e) {
-                throw new IllegalStateException("Unable to create document builder");
+                throw new RuntimeException("unable to create document builder: " + e, e);
             }
         }
     };
+
     /**
      * Get your non-cached DOM parser which can be configured to do schema
      * based validation of the instance Document.
-     *
      */
     static DocumentBuilder getParser(EntityResolver entityResolver, ErrorHandler errorHandler)
-        throws SAXNotRecognizedException, SAXNotSupportedException
-    {
+            throws SAXNotRecognizedException, SAXNotSupportedException {
 
         DocumentBuilder builder = documentBuilder.get();
         builder.reset();
@@ -169,90 +184,88 @@ public abstract class XmlaOlap4jUtil {
     }
 
     private static void prettyPrintLoop(
-        NodeList nodes,
-        StringBuilder string,
-        String indentation)
-    {
+            NodeList nodes,
+            StringBuilder string,
+            String indentation) {
         for (int index = 0; index < nodes.getLength(); index++) {
             prettyPrintLoop(nodes.item(index), string, indentation);
         }
     }
 
     private static void prettyPrintLoop(
-        Node node,
-        StringBuilder string,
-        String indentation)
-    {
+            Node node,
+            StringBuilder string,
+            String indentation) {
         if (node == null) {
             return;
         }
 
         int type = node.getNodeType();
         switch (type) {
-        case Node.DOCUMENT_NODE:
-            string.append("\n");
-            prettyPrintLoop(node.getChildNodes(), string, indentation + "\t");
-            break;
+            case Node.DOCUMENT_NODE:
+                string.append("\n");
+                prettyPrintLoop(node.getChildNodes(), string, indentation + "\t");
+                break;
 
-        case Node.ELEMENT_NODE:
-            string.append(indentation);
-            string.append("<");
-            string.append(node.getNodeName());
+            case Node.ELEMENT_NODE:
+                string.append(indentation);
+                string.append("<");
+                string.append(node.getNodeName());
 
-            Attr[] attributes;
-            if (node.getAttributes() != null) {
-                int length = node.getAttributes().getLength();
-                attributes = new Attr[length];
-                for (int loopIndex = 0; loopIndex < length; loopIndex++) {
-                    attributes[loopIndex] =
-                        (Attr)node.getAttributes().item(loopIndex);
+                Attr[] attributes;
+                if (node.getAttributes() != null) {
+                    int length = node.getAttributes().getLength();
+                    attributes = new Attr[length];
+                    for (int loopIndex = 0; loopIndex < length; loopIndex++) {
+                        attributes[loopIndex] =
+                                (Attr) node.getAttributes().item(loopIndex);
+                    }
+                } else {
+                    attributes = new Attr[0];
                 }
-            } else {
-                attributes = new Attr[0];
-            }
 
-            for (Attr attribute : attributes) {
-                string.append(" ");
-                string.append(attribute.getNodeName());
-                string.append("=\"");
-                string.append(attribute.getNodeValue());
-                string.append("\"");
-            }
+                for (Attr attribute : attributes) {
+                    string.append(" ");
+                    string.append(attribute.getNodeName());
+                    string.append("=\"");
+                    string.append(attribute.getNodeValue());
+                    string.append("\"");
+                }
 
-            string.append(">\n");
+                string.append(">\n");
 
-            prettyPrintLoop(node.getChildNodes(), string, indentation + "\t");
+                prettyPrintLoop(node.getChildNodes(), string, indentation + "\t");
 
-            string.append(indentation);
-            string.append("</");
-            string.append(node.getNodeName());
-            string.append(">\n");
+                string.append(indentation);
+                string.append("</");
+                string.append(node.getNodeName());
+                string.append(">\n");
 
-            break;
+                break;
 
-        case Node.TEXT_NODE:
-            string.append(indentation);
-            string.append(node.getNodeValue().trim());
-            string.append("\n");
-            break;
+            case Node.TEXT_NODE:
+                string.append(indentation);
+                string.append(node.getNodeValue().trim());
+                string.append("\n");
+                break;
 
-        case Node.PROCESSING_INSTRUCTION_NODE:
-            string.append(indentation);
-            string.append("<?");
-            string.append(node.getNodeName());
-            String text = node.getNodeValue();
-            if (text != null && text.length() > 0) {
-                string.append(text);
-            }
-            string.append("?>\n");
-            break;
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                string.append(indentation);
+                string.append("<?");
+                string.append(node.getNodeName());
+                String text = node.getNodeValue();
+                if (text != null && text.length() > 0) {
+                    string.append(text);
+                }
+                string.append("?>\n");
+                break;
 
-        case Node.CDATA_SECTION_NODE:
-            string.append(indentation);
-            string.append("<![CDATA[");
-            string.append(node.getNodeValue());
-            string.append("]]>");
-            break;
+            case Node.CDATA_SECTION_NODE:
+                string.append(indentation);
+                string.append("<![CDATA[");
+                string.append(node.getNodeValue());
+                string.append("]]>");
+                break;
         }
     }
 
@@ -262,8 +275,7 @@ public abstract class XmlaOlap4jUtil {
             if (childNodes.item(i) instanceof Element) {
                 Element child = (Element) childNodes.item(i);
                 if (child.getLocalName().equals(tag)
-                    && (ns == null || child.getNamespaceURI().equals(ns)))
-                {
+                        && (ns == null || child.getNamespaceURI().equals(ns))) {
                     return child;
                 }
             }
@@ -350,8 +362,7 @@ public abstract class XmlaOlap4jUtil {
         final List<Element> list = new ArrayList<Element>();
         for (Node node : listOf(element.getChildNodes())) {
             if (tag.equals(node.getLocalName())
-                && ((ns == null) || node.getNamespaceURI().equals(ns)))
-            {
+                    && ((ns == null) || node.getNamespaceURI().equals(ns))) {
                 list.add((Element) node);
             }
         }
@@ -361,7 +372,7 @@ public abstract class XmlaOlap4jUtil {
     /**
      * Converts a Node to a String.
      *
-     * @param node XML node
+     * @param node        XML node
      * @param prettyPrint Whether to print with nice indentation
      * @return String representation of XML
      */
@@ -374,7 +385,7 @@ public abstract class XmlaOlap4jUtil {
 
             Document doc = node.getOwnerDocument();
             Transformer transformer = factory.newTransformer();
-            if(prettyPrint) {
+            if (prettyPrint) {
                 transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 factory.setAttribute("indent-number", 4);
             }
@@ -391,19 +402,18 @@ public abstract class XmlaOlap4jUtil {
     }
 
 
-
     /**
      * Error handler plus helper methods.
      */
     static class ErrorHandlerImpl implements ErrorHandler {
-        public static final String WARNING_STRING        = "WARNING";
-        public static final String ERROR_STRING          = "ERROR";
-        public static final String FATAL_ERROR_STRING    = "FATAL";
+        public static final String WARNING_STRING = "WARNING";
+        public static final String ERROR_STRING = "ERROR";
+        public static final String FATAL_ERROR_STRING = "FATAL";
 
         // DOMError values
-        public static final short SEVERITY_WARNING      = 1;
-        public static final short SEVERITY_ERROR        = 2;
-        public static final short SEVERITY_FATAL_ERROR  = 3;
+        public static final short SEVERITY_WARNING = 1;
+        public static final short SEVERITY_ERROR = 2;
+        public static final short SEVERITY_FATAL_ERROR = 3;
 
         public void printErrorInfos(PrintStream out) {
             if (errors != null) {
@@ -414,7 +424,7 @@ public abstract class XmlaOlap4jUtil {
         }
 
         public static String formatErrorInfos(ErrorHandlerImpl saxEH) {
-            if (! saxEH.hasErrors()) {
+            if (!saxEH.hasErrors()) {
                 return "";
             }
             StringBuilder buf = new StringBuilder(512);
@@ -429,15 +439,15 @@ public abstract class XmlaOlap4jUtil {
             StringBuilder buf = new StringBuilder(128);
             buf.append("[");
             switch (ei.severity) {
-            case SEVERITY_WARNING:
-                buf.append(WARNING_STRING);
-                break;
-            case SEVERITY_ERROR:
-                buf.append(ERROR_STRING);
-                break;
-            case SEVERITY_FATAL_ERROR:
-                buf.append(FATAL_ERROR_STRING);
-                break;
+                case SEVERITY_WARNING:
+                    buf.append(WARNING_STRING);
+                    break;
+                case SEVERITY_ERROR:
+                    buf.append(ERROR_STRING);
+                    break;
+                case SEVERITY_FATAL_ERROR:
+                    buf.append(FATAL_ERROR_STRING);
+                    break;
             }
             buf.append(']');
             String systemId = ei.exception.getSystemId();
@@ -479,8 +489,7 @@ public abstract class XmlaOlap4jUtil {
         }
 
         public void fatalError(SAXParseException exception)
-            throws SAXException
-        {
+                throws SAXException {
             addError(new ErrorInfo(SEVERITY_FATAL_ERROR, exception));
         }
 
@@ -493,8 +502,8 @@ public abstract class XmlaOlap4jUtil {
 
         public String getFirstError() {
             return (hasErrors())
-                ? formatErrorInfo(errors.get(0))
-                : "";
+                    ? formatErrorInfo(errors.get(0))
+                    : "";
         }
     }
 
